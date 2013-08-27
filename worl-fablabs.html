@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fablabs - New industrial revolution is already everywhere</title>
+    <script type="text/javascript" src="http://jqueryjs.googlecode.com/files/jquery-1.3.2.min.js"></script>
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.5/leaflet.css" />
+    <script src="http://cdn.leafletjs.com/leaflet-0.5/leaflet.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <!--  GEOCODER -->    
+    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false"></script>
+    
+    <style>
+    
+    #map { z-index: 10;
+        width: 100%; height: 600px; margin: 0 0 0 0px;
+    }
+    
+    #menu {
+background-color: white;
+top: 1px;
+z-index: 999;
+position: fixed;
+height: 610px;
+overflow: scroll;
+width: 400px;
+float: right;
+margin-left: 65%;
+    }
+    
+    
+    .legende {
+        text-decoration: none !important;
+        color: white;    
+    }
+    
+    .info {
+        float: left;
+        width: 300px;
+        height: 50px;
+        background-color: #B14E5A;
+        border-radius: 5px;
+        margin: 5px;
+        padding: 10px;
+    }
+    #searchaddressbox {
+        margin-top: 5px;
+        float: left;
+        position: fixed;
+        z-index: 1;
+        height: 30px !important;
+        width: 63%;
+        font-family: "HelveticaNeueW01-75Bold", "Helvetica", Arial, sans-serif;
+        border-radius: 4px;
+        outline: none;
+        font-size: 18px;
+        line-height: 18px;
+        
+    }
+    .title1 {
+        color: #610B15;
+        padding: 10px;
+        height: 50px;
+        position: relative;
+        line-height: 20px !important;
+        font: bold 4em/5em "Helvetica Neue", Arial, Helvetica, Geneva, sans-serif;
+    }
+    #photos {
+        margin: auto;
+    }
+    
+    #groups {
+        padding: 20px;
+        top: 120px;
+        position: fixed;
+        overflow-y: scroll;
+        height: 450px;
+    }
+    
+    .leaflet-popup-content-wrapper {
+        max-width: 250px;
+    }
+    
+    .display {
+        position: fixed;
+        margin-top: 2%;
+        margin-left: 59%;
+        z-index: 10;
+    }
+    
+    .leaflet-popup-close-button {
+        position: fixed;
+        margin-top: 20px;
+        margin-left: 180px;
+        z-index: 1500;
+    }
+    
+    
+    .input_text {
+    padding:10px 10px;
+    background:#fff;
+    border-bottom: 2px double #610B15;
+    border-top: 2px double #610B15;
+    border-left: 2px double #610B15;
+    border-right: 2px double #610B15;
+    
+    }
+    </style>
+    
+
+    
+    </head>
+
+    <body>
+    
+    <div id="map"></div>
+    <input id="searchaddressbox" class="input_text" type="text" placeholder="Search" value="Londres">
+    
+    <div id="menu">
+        <h1 class="title1">Fablab List</h1>
+        <div id="groups"></div>
+    </div>   
+    
+   <script type="text/javascript"> 
+   
+//set fablabs array list
+
+var fabList = {"node":[
+    {"name":"Fablab Ghana Takoradi","lat":4.91754, "lng": -1.7676},
+    {"name":"Fablab Kenya kisumu","lat":-0.09828, "lng": 34.75791},
+    {"name":"Fablab Kenya University of nairobi","lat":-1.2798, "lng": 36.81845},
+    {"name":"South Africa Fablab Bloemfontein","lat":-29.12255, "lng": 26.21106},
+    {"name":"South Africa Cape town Cape Craft and Design Institute","lat":-33.92506, "lng": 18.42296},
+    {"name":"South Africa Kimberly Northern Cape Higher Education Institute","lat":-28.74065, "lng":  24.76421},
+    {"name":"South Africa Potchefstroom North West University","lat":-26.69056, "lng": 27.09254},
+    {"name":"South Africa Soshanguve  (Bright Youth Council)","lat": -26.69056, "lng": 27.09254},
+    {"name":"Togo Woelab, Fablab Lomé ","lat":-26.69056, "lng": 27.09254},
+    {"name":"Suriname Paramaribo (Fab Lab Paramaribo)","lat": 5.82258, "lng": -55.16768},
+    {"name":"Ethiopia Addis Ababa (FabLab Addis)","lat": 9.02327, "lng": 38.74895},
+    {"name":"Niambie Windhoek","lat": -22.55949, "lng": 17.08245},
+    
+    
+     
+    ]};
+    
+    //Fablab kenya kisumu  -0.09828, 34.75791
+    //Fablab Kenya University of nairobi -1.2798, 36.81845
+    
+    //South Africa Fablab Bloemfontein Central University of Technology -29.12255, 26.21106
+    
+    //South Africa Cape town Cape Craft and Design Institute -33.92506, 18.42296
+    
+    //South Africa Kimberly Northern Cape Higher Education Institute -28.74065, 24.76421
+    
+    //South Africa Potchefstroom North West University -26.69056, 27.09254
+    
+    // South Africa Soshanguve  (Bright Youth Council) -25.52521, 28.1
+    
+    //6.13902, 1.22798 lomé fablab
+    
+    //Suriname Paramaribo (Fab Lab Paramaribo)  5.82258, -55.16768
+    
+    //Ethiopia Addis Ababa (FabLab Addis) 9.02327, 38.74895
+    
+    //Niambie Windhoek -22.55949, 17.08245
+    
+    
+console.log("fabList",fabList)
+
+
+
+//MAP     
+var coords = 0;
+        
+// SET MASTER MAP
+   var map = L.map('map').setView([48.85522811385678, 2.3531341552734375 ], 4);
+       L.tileLayer('http://{s}.tile.cloudmade.com/ffdd86e27a8a46129afb5e678456afaf/997/256/{z}/{x}/{y}.png', {
+               attribution: 'Hello Place4Home',
+               maxZoom: 18
+       }).addTo(map);
+    
+//EVENT CLICK COORDONNÉS  VAR LAT LNG
+    
+    
+    var popup = L.popup();
+            
+    function onMapClick(e) {
+        var coords = e.latlng;
+                popup
+                    .setLatLng(e.latlng)
+                    .setContent("Cave !" + coords)
+                    .openOn(map);
+        var lat = coords.lat;
+        var lng = coords.lng;
+        clear();
+            
+        //activer fonction recherche de meetups?
+        //    gofetch(lat,lng);
+        console.log(lat);
+        console.log(lng);
+    }
+    //activer la fonction on map click
+    map.on('click', onMapClick);
+       
+    pullmaplab(fabList);
+       
+    
+    $(".legende").click( function () {
+        var lat = $(this).data("lat");
+        var lng = $(this).data("lng");
+        console.log(lat , lng);
+        map.setView([lat ,  lng], 13);
+        if (lat && lng) {
+            var marker = L.marker([lat, lng]).bindPopup().addTo(map);
+            marker.on("click", function () { marker.openPopup()})
+        }
+        
+    });  
+        
+    //take fablab array data and put it in map
+    function pullmaplab(fabList) {
+        var fablength = fabList.node.length;
+        console.log(fablength);
+        var links = [0] 
+        var names = [0]
+        var texts = [0]
+        var lat = [0]
+        var lng = [0]
+        var members = [0]
+        
+        for (i = 0; i < fablength; i++) {
+            //links[i] = data['data'][i].link;
+            names[i] = fabList.node[i].name;
+            lat[i] = fabList.node[i].lat;
+            lng[i] = fabList.node[i].lng;
+            //members[i] = data['data'][i].members;
+           // texts[i] = data['data'][i].caption.text;
+            console.log(names[i], lat[i], lng[i]);
+        }
+        
+        
+        for (var y = 0; y < lat.length; y++) {
+        
+            var unephoto = "<div class=\"info\"  data-lat=\"" + lat[y] + "\" data-lng=\"" + lng[y] + "\" ><div class='boxcontent' style='font-family:Calibri'><a data-lat=\"" + lat[y] + "\" data-lng=\"" + lng[y] + "\" class=\"legende\" href=\"#\">" + names[y] + "</a></div></div>"
+                
+                //a href=\"" + links[y] +"\"
+        
+            $('#groups').append(unephoto);
+        };
+        
+        $(".info").each( function () {
+                //$(this).children().addClass("hello")
+                var e = $(this);
+                var lat = e.attr("data-lat");
+                var lng = e.attr("data-lng");
+                if (lat && lng) {
+                    var marker = L.marker([lat, lng]).bindPopup(e.html()).addTo(map);
+                    marker.on("click", function () { marker.openPopup()})
+                }
+        });
+    }   
+        
+        
+        
+        
+        function gofetch(lat,lng){
+            
+            //https://api.meetup.com/2/groups?callback=?&sign=true&member_id=8377069&page=20&api&key=4a3d4e742c154d2f5c91943677f5e29&only=name,link
+            
+            $.getJSON("https://api.meetup.com/find/groups?callback=?&lon="+ lng + "&lat="+ lat+"&page=10&api&key=4a3d4e742c154d2f5c91943677f5e29", 
+        function (data) {
+            console.log(data);
+            var meetuprecu = data['data'].length;
+            var links = [0] 
+            var names = [0]
+            var texts = [0]
+            var lat = [0]
+            var lng = [0]
+            var members = [0]
+            
+            for (i = 0; i < meetuprecu; i++) {
+                links[i] = data['data'][i].link;
+                names[i] = data['data'][i].name;
+                lat[i] = data['data'][i].lat;
+                lng[i] = data['data'][i].lon;
+                members[i] = data['data'][i].members;
+               // texts[i] = data['data'][i].caption.text;
+            
+            }
+            
+            console.log(lat,lng);
+            
+            for (var y = 0; y < lat.length; y++) {
+            
+                var unephoto = "<div id=\"info\" data-lat=\"" + lat[y] + "\" data-lng=\"" + lng[y] + "\"><div id='boxcontent' style='font-family:Calibri'><a href=\"" + links[y] +"\" target='_blank'><p class=\"legende\">" + names[y] +
+                    "</p></a>Membres : " + members[y] +
+                        "</div></div>"
+            
+                $('#groups').append(unephoto);
+            };
+            
+            
+            $("#info").each( function () {
+                    //$(this).children().addClass("hello")
+                    var e = $(this);
+                    var lat = e.attr("data-lat");
+                    var lng = e.attr("data-lng");
+                    if (lat && lng) {
+                        var marker = L.marker([lat, lng]).bindPopup(e.html()).addTo(map);
+                        marker.on("click", function () { marker.openPopup()})
+                    }
+            });
+        });
+    }
+        
+        //geocoder
+        function initialize() {
+          geocoder = new google.maps.Geocoder();
+          console.log("geocoder initialize");
+        }  
+        
+        google.maps.event.addDomListener(window, 'load', initialize);
+         
+        // Clear when new input    
+        function clear() {
+            $('#groups').children().remove();
+        }
+    
+        
+        //Keypress Input
+        $("input#searchaddressbox").keydown(function(e){
+            if (e.keyCode == 13 && !e.shiftKey)
+            {    
+                var zipcode = $("input#searchaddressbox").val();
+                clear();
+                console.log("keypress" + zipcode);
+                codeAddress();
+                
+                function codeAddress() {
+                  var address = document.getElementById('searchaddressbox').value;
+                  console.log("yesss", address );
+                  geocoder.geocode( { 'address': address}, function(results, status) {
+                    if (status == google.maps.GeocoderStatus.OK) {
+                      console.log(results);
+                      console.log(results[0].geometry.location.mb);
+                      console.log(results[0].geometry.location.nb);
+                      // end interesting function
+                      var lat = results[0].geometry.location.mb;
+                      var lng = results[0].geometry.location.nb;
+                      map.setView([lat ,  lng], 15);
+                      if (lat && lng) {
+                          var marker = L.marker([lat, lng]).bindPopup().addTo(map);
+                          marker.on("click", function () { marker.openPopup()})
+                      }
+                
+                    } else {
+                      alert('Geocode was not successful for the following reason: ' + status);
+                    }
+                  });
+                }
+                
+            } else {
+            console.log("Geocoding query pas ok");
+        }
+        }); 
+    
+    </script>
+    </body>
+
+    </html>
